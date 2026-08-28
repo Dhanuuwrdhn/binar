@@ -1,10 +1,11 @@
-import React from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Binar } from '../core/BinarCore';
 import { useBinarCalls, useDeliveryFeedback } from './hooks';
 import { formatDuration, formatSize } from '../utils/format';
 import { callsToText } from '../utils/export';
 import { copyOrShare } from './deliver';
+import { filterCalls, STATUS_FILTERS, type StatusFilterValue } from '../utils/filter';
 import type { HttpCall } from '../types';
 
 export function statusColor(call: HttpCall): string {
@@ -42,6 +43,13 @@ interface Props {
 export function CallListScreen({ onSelect, onClose }: Props) {
   const calls = useBinarCalls();
   const [feedback, deliver] = useDeliveryFeedback();
+  const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<StatusFilterValue>('all');
+  const filtered = useMemo(
+    () => filterCalls(calls, query, statusFilter),
+    [calls, query, statusFilter]
+  );
+  const filterActive = query.trim() !== '' || statusFilter !== 'all';
 
   return (
     <View style={styles.container}>
@@ -49,12 +57,12 @@ export function CallListScreen({ onSelect, onClose }: Props) {
         <Text style={styles.title}>Binar — HTTP Inspector</Text>
         <View style={styles.headerActions}>
           <Pressable
-            onPress={() => deliver(() => copyOrShare(callsToText(calls), 'Binar — all calls'))}
+            onPress={() => deliver(() => copyOrShare(callsToText(filtered), 'Binar — calls'))}
             hitSlop={8}
-            disabled={calls.length === 0}
+            disabled={filtered.length === 0}
           >
-            <Text style={[styles.headerAction, calls.length === 0 && styles.headerActionOff]}>
-              Copy all
+            <Text style={[styles.headerAction, filtered.length === 0 && styles.headerActionOff]}>
+              {filterActive ? `Copy ${filtered.length}` : 'Copy all'}
             </Text>
           </Pressable>
           <Pressable onPress={() => Binar.clear()} hitSlop={8}>
@@ -65,6 +73,33 @@ export function CallListScreen({ onSelect, onClose }: Props) {
           </Pressable>
         </View>
       </View>
+      {calls.length > 0 && (
+        <View style={styles.filters}>
+          <TextInput
+            style={styles.search}
+            placeholder="Search method, URL, screen…"
+            placeholderTextColor="#999"
+            value={query}
+            onChangeText={setQuery}
+            autoCapitalize="none"
+            autoCorrect={false}
+            clearButtonMode="while-editing"
+          />
+          <View style={styles.chipRow}>
+            {STATUS_FILTERS.map((f) => (
+              <Pressable
+                key={f}
+                style={[styles.chip, statusFilter === f && styles.chipActive]}
+                onPress={() => setStatusFilter(f)}
+              >
+                <Text style={[styles.chipText, statusFilter === f && styles.chipTextActive]}>
+                  {f === 'all' ? 'All' : f}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      )}
       {feedback && (
         <View style={styles.toast}>
           <Text style={styles.toastText}>{feedback}</Text>
@@ -74,9 +109,13 @@ export function CallListScreen({ onSelect, onClose }: Props) {
         <View style={styles.empty}>
           <Text style={styles.emptyText}>No HTTP calls captured yet</Text>
         </View>
+      ) : filtered.length === 0 ? (
+        <View style={styles.empty}>
+          <Text style={styles.emptyText}>No calls match this search</Text>
+        </View>
       ) : (
         <FlatList
-          data={calls}
+          data={filtered}
           keyExtractor={(c) => c.id}
           renderItem={({ item }) => (
             <Pressable style={styles.row} onPress={() => onSelect(item)}>
@@ -119,6 +158,31 @@ const styles = StyleSheet.create({
   headerActions: { flexDirection: 'row', gap: 14 },
   headerAction: { fontSize: 14, color: '#1565c0', fontWeight: '600' },
   headerActionOff: { color: '#bbb' },
+  filters: {
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 4,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#ddd',
+  },
+  search: {
+    backgroundColor: '#f2f2f2',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    fontSize: 13,
+    color: '#222',
+  },
+  chipRow: { flexDirection: 'row', gap: 6, marginTop: 8, marginBottom: 4, flexWrap: 'wrap' },
+  chip: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: '#f2f2f2',
+  },
+  chipActive: { backgroundColor: '#1565c0' },
+  chipText: { fontSize: 12, fontWeight: '600', color: '#666' },
+  chipTextActive: { color: '#fff' },
   toast: { backgroundColor: '#323232', paddingVertical: 8, alignItems: 'center' },
   toastText: { color: '#fff', fontSize: 12, fontWeight: '600' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center' },
