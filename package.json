@@ -1,6 +1,6 @@
 {
   "name": "@dhanuwrdhn/binar",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Binar — in-app HTTP inspector for React Native, inspired by Flutter's Alice. Captures fetch, axios and XMLHttpRequest traffic.",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -21,6 +21,15 @@
     "logger"
   ],
   "license": "MIT",
+  "author": "Dhanu Wardhana",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dhanuuwrdhn/binar.git"
+  },
+  "homepage": "https://github.com/Dhanuuwrdhn/binar#readme",
+  "bugs": {
+    "url": "https://github.com/Dhanuuwrdhn/binar/issues"
+  },
   "peerDependencies": {
     "react": "*",
     "react-native": "*"

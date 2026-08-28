@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/binar-banner.svg" alt="Binar — in-app HTTP inspector for React Native" width="100%">
+  <img src="https://raw.githubusercontent.com/Dhanuuwrdhn/binar/main/assets/binar-banner.svg" alt="Binar — in-app HTTP inspector for React Native" width="100%">
 </p>
 
 <p align="center">
