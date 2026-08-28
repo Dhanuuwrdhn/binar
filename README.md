@@ -15,8 +15,6 @@
 
 See every HTTP call your app makes, from inside your app. Binar captures **fetch**, **axios**, and raw **XMLHttpRequest** traffic and shows it on an in-app screen — call list, then tap through to headers, bodies, status, and timing. A floating bubble tells you when requests fire.
 
-Inspired by [Alice](https://pub.dev/packages/alice) for Flutter. JS-only TypeScript, no native code, so it runs in Expo Go, bare React Native, and dev clients alike.
-
 ## One patch, three clients
 
 In React Native, `fetch` is a polyfill built on `XMLHttpRequest`, and axios ships an XHR adapter. Binar patches XHR once and wraps `fetch` for full body access, using an internal dedupe marker so a single call is never recorded twice.
