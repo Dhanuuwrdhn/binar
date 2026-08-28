@@ -29,7 +29,7 @@ Axios needs zero configuration. So does everything else.
 npm install github:Born2Works/bornworks-react-native-network
 ```
 
-Metro transpiles the TypeScript source directly — there is no build step. The package installs under its own name, so import from `@bornworks/binar`.
+Metro transpiles the TypeScript source directly — there is no build step. The package installs under its own name, so import from `@dhanuwrdhn/binar`.
 
 > Running Jest in the host app? Add the package to `transformIgnorePatterns`, or Jest will fail to parse the shipped TypeScript.
 
@@ -39,7 +39,7 @@ Metro transpiles the TypeScript source directly — there is no build step. The 
 
 ```tsx
 // index.js
-import { Binar } from '@bornworks/binar';
+import { Binar } from '@dhanuwrdhn/binar';
 
 Binar.init({ showNotification: true });
 ```
@@ -47,7 +47,7 @@ Binar.init({ showNotification: true });
 **2. Wrap your app root.** The inspector renders as a Modal, so no navigator is required.
 
 ```tsx
-import { BinarProvider } from '@bornworks/binar';
+import { BinarProvider } from '@dhanuwrdhn/binar';
 
 export default function App() {
   return (
@@ -93,7 +93,7 @@ With react-navigation:
 
 ```tsx
 import { createNavigationContainerRef } from '@react-navigation/native';
-import { Binar } from '@bornworks/binar';
+import { Binar } from '@dhanuwrdhn/binar';
 
 const navRef = createNavigationContainerRef();
 const reportScreen = () => Binar.setScreen(navRef.getCurrentRoute()?.name ?? null);
@@ -108,7 +108,7 @@ const reportScreen = () => Binar.setScreen(navRef.getCurrentRoute()?.name ?? nul
 `BinarProvider` needs no navigator. If you'd rather give the inspector its own route:
 
 ```tsx
-import { BinarScreen } from '@bornworks/binar';
+import { BinarScreen } from '@dhanuwrdhn/binar';
 
 <Stack.Screen name="BinarInspector" component={BinarScreen} />
 // navigation.navigate('BinarInspector')

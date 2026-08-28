@@ -1,6 +1,6 @@
-# @bornworks/binar example
+# @dhanuwrdhn/binar example
 
-Minimal app showing how to wire @bornworks/binar with the common HTTP clients.
+Minimal app showing how to wire @dhanuwrdhn/binar with the common HTTP clients.
 
 ## Run it (Expo, fastest)
 
@@ -13,7 +13,7 @@ npm install github:Born2Works/bornworks-react-native-network
 npx expo start
 ```
 
-Works in Expo Go — @bornworks/binar is JS-only, no native code.
+Works in Expo Go — @dhanuwrdhn/binar is JS-only, no native code.
 
 ## Run it (bare React Native)
 

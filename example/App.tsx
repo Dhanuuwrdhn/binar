@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import axios from 'axios';
-import { Binar, BinarProvider } from '@bornworks/binar';
+import { Binar, BinarProvider } from '@dhanuwrdhn/binar';
 
 // 1) Init as early as possible — before any request fires.
 //    In a real app, put this at the top of index.js.

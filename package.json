@@ -1,5 +1,5 @@
 {
-  "name": "@bornworks/binar",
+  "name": "@dhanuwrdhn/binar",
   "version": "0.1.0",
   "description": "Binar — in-app HTTP inspector for React Native, inspired by Flutter's Alice. Captures fetch, axios and XMLHttpRequest traffic.",
   "main": "src/index.ts",
