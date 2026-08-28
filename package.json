@@ -1,6 +1,6 @@
 {
   "name": "@dhanuwrdhn/binar",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Binar — in-app HTTP inspector for React Native. Captures fetch, axios and XMLHttpRequest traffic.",
   "main": "src/index.ts",
   "types": "src/index.ts",

@@ -6,6 +6,7 @@ import { callToCurl } from '../utils/curl';
 import { copyOrShare, shareText } from './deliver';
 import { useDeliveryFeedback } from './hooks';
 import { statusColor } from './CallListScreen';
+import { colors } from './theme';
 import type { HttpCall } from '../types';
 
 const TABS = ['Overview', 'Request', 'Response'] as const;
@@ -37,17 +38,6 @@ export function CallDetailScreen({ call, onBack }: Props) {
         <Text style={styles.title} numberOfLines={1}>
           {call.method} {call.url}
         </Text>
-        <View style={styles.headerActions}>
-          <Pressable onPress={() => deliver(() => copyOrShare(callToCurl(call), label))} hitSlop={8}>
-            <Text style={styles.headerAction}>cURL</Text>
-          </Pressable>
-          <Pressable onPress={() => deliver(() => copyOrShare(callToText(call), label))} hitSlop={8}>
-            <Text style={styles.headerAction}>Copy</Text>
-          </Pressable>
-          <Pressable onPress={() => deliver(() => shareText(callToText(call), label))} hitSlop={8}>
-            <Text style={styles.headerAction}>Share</Text>
-          </Pressable>
-        </View>
       </View>
       {feedback && (
         <View style={styles.toast}>
@@ -87,6 +77,22 @@ export function CallDetailScreen({ call, onBack }: Props) {
             <Text style={styles.pending}>Waiting for response…</Text>
           ))}
       </ScrollView>
+      {/* Bottom, thumb-reachable, icon+label: the header's tiny text links were
+          easy to miss — these are the screen's primary actions. */}
+      <View style={styles.actionBar}>
+        <Pressable style={styles.actionButton} onPress={() => deliver(() => copyOrShare(callToCurl(call), label))} hitSlop={8}>
+          <Text style={styles.actionIcon}>❯_</Text>
+          <Text style={styles.actionLabel}>cURL</Text>
+        </Pressable>
+        <Pressable style={styles.actionButton} onPress={() => deliver(() => copyOrShare(callToText(call), label))} hitSlop={8}>
+          <Text style={styles.actionIcon}>📋</Text>
+          <Text style={styles.actionLabel}>Copy</Text>
+        </Pressable>
+        <Pressable style={styles.actionButton} onPress={() => deliver(() => shareText(callToText(call), label))} hitSlop={8}>
+          <Text style={styles.actionIcon}>📤</Text>
+          <Text style={styles.actionLabel}>Share</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -175,7 +181,7 @@ function HeadersAndBody({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: colors.surface },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -183,36 +189,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#ddd',
+    borderBottomColor: colors.border,
   },
-  back: { color: '#1565c0', fontSize: 15, fontWeight: '600' },
-  title: { flex: 1, fontSize: 13, fontWeight: '600', color: '#222' },
-  headerActions: { flexDirection: 'row', gap: 14 },
-  headerAction: { fontSize: 14, color: '#1565c0', fontWeight: '600' },
+  back: { color: colors.accent, fontSize: 15, fontWeight: '600' },
+  title: { flex: 1, fontSize: 13, fontWeight: '600', color: colors.text },
   toast: { backgroundColor: '#323232', paddingVertical: 8, alignItems: 'center' },
   toastText: { color: '#fff', fontSize: 12, fontWeight: '600' },
-  tabs: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#ddd' },
+  tabs: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   tab: { flex: 1, alignItems: 'center', paddingVertical: 10 },
-  tabActive: { borderBottomWidth: 2, borderBottomColor: '#1565c0' },
+  tabActive: { borderBottomWidth: 2, borderBottomColor: colors.accent },
   tabText: { fontSize: 13, color: '#666' },
-  tabTextActive: { color: '#1565c0', fontWeight: '700' },
+  tabTextActive: { color: colors.accent, fontWeight: '700' },
   content: { padding: 16 },
   statusBanner: { borderRadius: 8, padding: 10, alignItems: 'center', marginBottom: 12 },
   statusBannerText: { color: '#fff', fontWeight: '700' },
   kvRow: { flexDirection: 'row', paddingVertical: 4 },
-  k: { width: 120, fontSize: 12, color: '#888', fontWeight: '600' },
-  v: { flex: 1, fontSize: 12, color: '#222' },
-  section: { fontSize: 13, fontWeight: '700', color: '#222', marginTop: 16, marginBottom: 6 },
+  k: { width: 120, fontSize: 12, color: colors.textMuted, fontWeight: '600' },
+  v: { flex: 1, fontSize: 12, color: colors.text },
+  section: { fontSize: 13, fontWeight: '700', color: colors.text, marginTop: 16, marginBottom: 6 },
   body: {
     fontFamily: 'monospace',
     fontSize: 11,
-    color: '#222',
-    backgroundColor: '#f6f6f6',
+    color: colors.text,
+    backgroundColor: colors.surfaceCode,
     borderRadius: 6,
     padding: 8,
   },
-  muted: { fontSize: 12, color: '#999', marginTop: 4 },
-  pending: { color: '#888' },
-  error: { color: '#e53935', fontWeight: '600' },
-  showMore: { color: '#1565c0', fontWeight: '600', marginTop: 8 },
+  muted: { fontSize: 12, color: colors.textFaint, marginTop: 4 },
+  pending: { color: colors.textMuted },
+  error: { color: colors.danger, fontWeight: '600' },
+  showMore: { color: colors.accent, fontWeight: '600', marginTop: 8 },
+  actionBar: {
+    flexDirection: 'row',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border,
+    paddingBottom: 4,
+  },
+  actionButton: { flex: 1, alignItems: 'center', paddingVertical: 10, gap: 2 },
+  actionIcon: { fontSize: 18 },
+  actionLabel: { fontSize: 11, fontWeight: '600', color: colors.accent },
 });
