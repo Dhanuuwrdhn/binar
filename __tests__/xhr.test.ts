@@ -104,6 +104,20 @@ describe('XHR interceptor', () => {
     expect(typeof call.durationMs).toBe('number');
   });
 
+  it('redacts sensitive fields inside JSON request and response bodies', () => {
+    const xhr = new (globalThis as any).XMLHttpRequest();
+    xhr.open('POST', 'https://api.dev/login');
+    xhr.send(JSON.stringify({ email: 'a@b.com', password: 'hunter2' }));
+    xhr.respond(
+      200,
+      'content-type: application/json\r\n',
+      JSON.stringify({ user: 'a@b.com', token: 'abc.def.ghi' })
+    );
+    const call = core.store.getAll()[0];
+    expect(JSON.parse(call.request.body!)).toEqual({ email: 'a@b.com', password: '***' });
+    expect(JSON.parse(call.response!.body!)).toEqual({ user: 'a@b.com', token: '***' });
+  });
+
   it('records status 0 as an error', () => {
     const xhr = fire();
     xhr.failNetwork();

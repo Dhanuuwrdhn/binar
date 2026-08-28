@@ -8,7 +8,7 @@
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-6BA5FF?style=flat-square&labelColor=0E1420">
   <img alt="React Native" src="https://img.shields.io/badge/React_Native-Expo_%7C_bare-6BA5FF?style=flat-square&labelColor=0E1420">
   <img alt="Native modules: none" src="https://img.shields.io/badge/native_modules-none-3DD68C?style=flat-square&labelColor=0E1420">
-  <img alt="24 tests" src="https://img.shields.io/badge/tests-24_passing-3DD68C?style=flat-square&labelColor=0E1420">
+  <img alt="47 tests" src="https://img.shields.io/badge/tests-47_passing-3DD68C?style=flat-square&labelColor=0E1420">
 </p>
 
 ---
@@ -79,6 +79,7 @@ Binar.uninstall()              // restore the original XHR and fetch
 | `maxCallsCount` | `1000` | Ring buffer size; oldest calls are evicted first |
 | `maxBodySize` | `1_000_000` | Bodies longer than this (in chars) are truncated with a marker |
 | `redactedHeaders` | `authorization`, `cookie`, `set-cookie` | Values render as `***`, matched case-insensitively |
+| `redactedBodyFields` | `password`, `token`, `secret`, `api_key`, `card_number`, `cvv`, and a few more | JSON body fields at any nesting depth render as `***`, matched case-insensitively. Only applies to bodies that parse as JSON |
 | `ignoredUrls` | `[]` | Strings or RegExps to skip; Metro's `/symbolicate` noise is skipped already |
 
 ### Screen label (Alice-style)

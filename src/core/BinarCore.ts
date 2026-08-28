@@ -1,7 +1,7 @@
 import { CallStore } from './CallStore';
 import { installXHRInterceptor } from '../interceptors/xhr';
 import { installFetchInterceptor } from '../interceptors/fetch';
-import { redactHeaders } from '../utils/redact';
+import { redactHeaders, redactBodyFields } from '../utils/redact';
 import { toStoredBody } from '../utils/format';
 import type { BinarConfig, HttpCall, ResolvedBinarConfig } from '../types';
 import { resolveConfig } from '../types';
@@ -88,7 +88,10 @@ export class BinarCore {
       state: 'pending',
       request: {
         headers: redactHeaders(input.headers, this.config.redactedHeaders),
-        ...toStoredBody(input.body, this.config.maxBodySize),
+        ...toStoredBody(
+          redactBodyFields(input.body, this.config.redactedBodyFields),
+          this.config.maxBodySize
+        ),
       },
     };
     this.store.add(call);
@@ -108,7 +111,10 @@ export class BinarCore {
       response: {
         status: input.status,
         headers: redactHeaders(input.headers, this.config.redactedHeaders),
-        ...toStoredBody(input.body, this.config.maxBodySize),
+        ...toStoredBody(
+          redactBodyFields(input.body, this.config.redactedBodyFields),
+          this.config.maxBodySize
+        ),
       },
     });
   }

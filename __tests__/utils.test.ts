@@ -1,6 +1,6 @@
-import { redactHeaders } from '../src/utils/redact';
+import { redactHeaders, redactBodyFields } from '../src/utils/redact';
 import { toStoredBody, parseRawHeaders, prettyBody } from '../src/utils/format';
-import { DEFAULT_REDACTED_HEADERS, resolveConfig } from '../src/types';
+import { DEFAULT_REDACTED_HEADERS, DEFAULT_REDACTED_BODY_FIELDS, resolveConfig } from '../src/types';
 
 describe('redactHeaders', () => {
   it('redacts sensitive headers case-insensitively', () => {
@@ -11,6 +11,56 @@ describe('redactHeaders', () => {
     expect(out.Authorization).toBe('***');
     expect(out.COOKIE).toBe('***');
     expect(out['Content-Type']).toBe('application/json');
+  });
+});
+
+describe('redactBodyFields', () => {
+  it('redacts matching fields in a JSON string body, case-insensitively', () => {
+    const raw = JSON.stringify({ email: 'a@b.com', PASSWORD: 'hunter2' });
+    const out = redactBodyFields(raw, DEFAULT_REDACTED_BODY_FIELDS) as string;
+    expect(JSON.parse(out)).toEqual({ email: 'a@b.com', PASSWORD: '***' });
+  });
+
+  it('redacts nested fields inside objects and arrays', () => {
+    const raw = JSON.stringify({
+      user: { name: 'Budi', token: 'abc.def.ghi' },
+      cards: [{ card_number: '4111111111111111', last4: '1111' }],
+    });
+    const out = JSON.parse(redactBodyFields(raw, DEFAULT_REDACTED_BODY_FIELDS) as string);
+    expect(out.user).toEqual({ name: 'Budi', token: '***' });
+    expect(out.cards[0]).toEqual({ card_number: '***', last4: '1111' });
+  });
+
+  it('redacts a plain (already-parsed) object the same way as a JSON string', () => {
+    const out = redactBodyFields({ secret: 'x', ok: true }, DEFAULT_REDACTED_BODY_FIELDS);
+    expect(out).toEqual({ secret: '***', ok: true });
+  });
+
+  it('respects a caller-supplied field list instead of the default', () => {
+    const raw = JSON.stringify({ password: 'plain', ktp_number: '3201xxxx' });
+    const out = JSON.parse(redactBodyFields(raw, ['ktp_number']) as string);
+    expect(out).toEqual({ password: 'plain', ktp_number: '***' });
+  });
+
+  it('leaves non-JSON strings untouched rather than risk corrupting them', () => {
+    const raw = 'password=hunter2&ok=true';
+    expect(redactBodyFields(raw, DEFAULT_REDACTED_BODY_FIELDS)).toBe(raw);
+  });
+
+  it('leaves FormData/Blob/ArrayBuffer bodies untouched', () => {
+    expect(redactBodyFields(new ArrayBuffer(4), DEFAULT_REDACTED_BODY_FIELDS)).toBeInstanceOf(
+      ArrayBuffer
+    );
+  });
+
+  it('passes a SkippedBody marker through untouched even if a field name collides', () => {
+    const marker = { binarSkipped: true, note: '[image/png response, 2.0 KB]', size: 2048 };
+    expect(redactBodyFields(marker, ['note', 'size'])).toBe(marker);
+  });
+
+  it('is a no-op when the field list is empty', () => {
+    const raw = JSON.stringify({ password: 'plain' });
+    expect(redactBodyFields(raw, [])).toBe(raw);
   });
 });
 
@@ -74,5 +124,6 @@ describe('resolveConfig', () => {
     expect(c.maxCallsCount).toBe(1000);
     expect(c.maxBodySize).toBe(1_000_000);
     expect(c.redactedHeaders).toEqual(['authorization', 'cookie', 'set-cookie']);
+    expect(c.redactedBodyFields).toEqual(DEFAULT_REDACTED_BODY_FIELDS);
   });
 });

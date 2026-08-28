@@ -22,11 +22,12 @@ function headerLines(headers: Record<string, string>): string {
 }
 
 function isRedacted(call: HttpCall): boolean {
-  const values = [
+  const headerValues = [
     ...Object.values(call.request.headers),
     ...Object.values(call.response?.headers ?? {}),
   ];
-  return values.includes('***');
+  if (headerValues.includes('***')) return true;
+  return Boolean(call.request.body?.includes('***') || call.response?.body?.includes('***'));
 }
 
 /** One call as plain text: metadata, both header sets, and both full bodies. */
@@ -72,7 +73,7 @@ export function callToText(call: HttpCall): string {
   if (isRedacted(call)) {
     parts.push(
       'Values shown as *** were redacted when the call was captured ' +
-        '(BinarConfig.redactedHeaders); the real value was never stored.',
+        '(BinarConfig.redactedHeaders / redactedBodyFields); the real value was never stored.',
     );
   }
   if (call.request.bodyTruncated || call.response?.bodyTruncated) {

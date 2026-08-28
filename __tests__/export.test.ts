@@ -54,6 +54,13 @@ describe('callToText', () => {
     expect(callToText(call())).toContain('redacted when the call was captured');
   });
 
+  it('explains a redacted value found only in the body', () => {
+    const bodyRedacted = call({
+      request: { headers: { Accept: 'application/json' }, body: '{"password":"***"}' },
+    });
+    expect(callToText(bodyRedacted)).toContain('redacted when the call was captured');
+  });
+
   it('does not claim redaction when nothing was redacted', () => {
     const clean = call({ request: { headers: { Accept: 'application/json' } } });
     expect(callToText(clean)).not.toContain('redacted when the call was captured');
