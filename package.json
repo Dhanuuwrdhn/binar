@@ -21,7 +21,10 @@
     "logger"
   ],
   "license": "MIT",
-  "author": "Dhanu Wardhana",
+  "author": {
+    "name": "Dhanu Wardhana",
+    "url": "https://github.com/Dhanuuwrdhn"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Dhanuuwrdhn/binar.git"
