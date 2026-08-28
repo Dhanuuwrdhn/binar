@@ -1,5 +1,6 @@
 import type { BinarCore } from '../core/BinarCore';
 import { TRACE_HEADER } from './xhr';
+import { formatSize, type SkippedBody } from '../utils/format';
 
 let traceCounter = 0;
 
@@ -78,13 +79,6 @@ export function installFetchInterceptor(core: BinarCore): () => void {
 }
 
 async function recordResponse(core: BinarCore, id: string, response: Response): Promise<void> {
-  let body: string | undefined;
-  try {
-    // Clone so the app can still consume the original stream.
-    body = await response.clone().text();
-  } catch {
-    body = '[unreadable body]';
-  }
   const headers: Record<string, string> = {};
   try {
     response.headers?.forEach?.((value: string, key: string) => {
@@ -93,7 +87,47 @@ async function recordResponse(core: BinarCore, id: string, response: Response): 
   } catch {
     // ignore
   }
+  const body = await readResponseBody(response, headers, core.config.maxBodySize);
   core.recordSuccess(id, { status: response.status, headers, body });
+}
+
+/**
+ * response.clone().text() buffers the entire body in memory — fine for a
+ * JSON reply, a real problem for a multi-MB image/video/file download.
+ * Content-Length and Content-Type are plain headers, already known without
+ * reading anything, so use them to skip the read entirely when the body is
+ * oversized or not text, recording a marker with the real size instead.
+ */
+async function readResponseBody(
+  response: Response,
+  headers: Record<string, string>,
+  maxBodySize: number,
+): Promise<string | SkippedBody> {
+  const contentType = headers['content-type'] ?? '';
+  const contentLength = Number(headers['content-length']);
+  const knownSize = Number.isFinite(contentLength) ? contentLength : undefined;
+
+  if (knownSize !== undefined && knownSize > maxBodySize) {
+    return { binarSkipped: true, note: `[response body too large to capture: ${formatSize(knownSize)}]`, size: knownSize };
+  }
+  if (contentType && !isTextualContentType(contentType)) {
+    const sizeNote = knownSize !== undefined ? `, ${formatSize(knownSize)}` : '';
+    return { binarSkipped: true, note: `[${contentType} response${sizeNote}]`, size: knownSize ?? 0 };
+  }
+
+  try {
+    // Clone so the app can still consume the original stream.
+    return await response.clone().text();
+  } catch {
+    return '[unreadable body]';
+  }
+}
+
+const TEXTUAL_CONTENT_TYPE =
+  /^(text\/|application\/(json|xml|javascript|x-www-form-urlencoded|graphql)|.*\+json$|.*\+xml$)/i;
+
+function isTextualContentType(contentType: string): boolean {
+  return TEXTUAL_CONTENT_TYPE.test(contentType.split(';')[0].trim());
 }
 
 function normalizeHeaders(headers: unknown): Record<string, string> {

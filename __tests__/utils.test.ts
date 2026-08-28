@@ -32,6 +32,18 @@ describe('toStoredBody', () => {
     expect(toStoredBody({ a: 1 }, 100).body).toBe('{"a":1}');
     expect(toStoredBody(new ArrayBuffer(8), 100).body).toBe('[ArrayBuffer 8 bytes]');
   });
+
+  it('passes a SkippedBody marker through using its own reported size', () => {
+    const out = toStoredBody(
+      { binarSkipped: true, note: '[image/png response, 2.3 MB]', size: 2_411_724 },
+      100
+    );
+    expect(out).toEqual({
+      body: '[image/png response, 2.3 MB]',
+      bodyTruncated: true,
+      size: 2_411_724,
+    });
+  });
 });
 
 describe('parseRawHeaders', () => {

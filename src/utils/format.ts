@@ -4,9 +4,29 @@ export interface StoredBody {
   size?: number;
 }
 
+/**
+ * Passed instead of a raw body when the caller already decided not to
+ * materialize it (e.g. a large or binary fetch response read via
+ * Content-Length/Content-Type alone) but still knows its real size —
+ * bypasses toStoredBody's usual stringify-then-measure path so that size
+ * reflects the actual response, not the marker text.
+ */
+export interface SkippedBody {
+  binarSkipped: true;
+  note: string;
+  size: number;
+}
+
+function isSkippedBody(raw: unknown): raw is SkippedBody {
+  return typeof raw === 'object' && raw !== null && (raw as { binarSkipped?: unknown }).binarSkipped === true;
+}
+
 /** Normalize an arbitrary request/response body into a bounded string for storage. */
 export function toStoredBody(raw: unknown, maxBodySize: number): StoredBody {
   if (raw === undefined || raw === null) return {};
+  if (isSkippedBody(raw)) {
+    return { body: raw.note, bodyTruncated: true, size: raw.size };
+  }
   let text: string;
   if (typeof raw === 'string') {
     text = raw;

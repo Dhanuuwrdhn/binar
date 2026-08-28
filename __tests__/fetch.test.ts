@@ -89,6 +89,71 @@ describe('fetch interceptor', () => {
     expect(call.error?.message).toBe('Network request failed');
   });
 
+  it('skips reading oversized response bodies, recording a sized marker instead', async () => {
+    core.uninstall();
+    let cloned = false;
+    (globalThis as any).fetch = jest.fn(async () => ({
+      status: 200,
+      headers: {
+        forEach: (cb: (v: string, k: string) => void) => {
+          cb('application/json', 'content-type');
+          cb('5000000', 'content-length'); // 5 MB, over the default 1 MB cap
+        },
+      },
+      clone() {
+        cloned = true;
+        return { text: async () => 'x'.repeat(5_000_000) };
+      },
+    }));
+    core = new BinarCore();
+    core.init({ enabled: true });
+
+    await (globalThis as any).fetch('https://api.dev/big.json');
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+    expect(cloned).toBe(false); // never materialized the 5 MB body
+    const call = core.store.getAll()[0];
+    expect(call.response?.body).toBe('[response body too large to capture: 4.8 MB]');
+    expect(call.response?.bodyTruncated).toBe(true);
+    expect(call.response?.size).toBe(5_000_000);
+  });
+
+  it('skips reading binary response bodies by content-type, keeping the real size', async () => {
+    core.uninstall();
+    let cloned = false;
+    (globalThis as any).fetch = jest.fn(async () => ({
+      status: 200,
+      headers: {
+        forEach: (cb: (v: string, k: string) => void) => {
+          cb('image/png', 'content-type');
+          cb('2048', 'content-length');
+        },
+      },
+      clone() {
+        cloned = true;
+        return { text: async () => 'binary-ish garbage' };
+      },
+    }));
+    core = new BinarCore();
+    core.init({ enabled: true });
+
+    await (globalThis as any).fetch('https://api.dev/logo.png');
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+    expect(cloned).toBe(false);
+    const call = core.store.getAll()[0];
+    expect(call.response?.body).toBe('[image/png response, 2.0 KB]');
+    expect(call.response?.size).toBe(2048);
+  });
+
+  it('still reads small JSON bodies normally', async () => {
+    await (globalThis as any).fetch('https://api.dev/items');
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    const call = core.store.getAll()[0];
+    expect(call.response?.body).toBe('{"ok":true}');
+    expect(call.response?.bodyTruncated).toBe(false);
+  });
+
   it('uninstall restores the original fetch', () => {
     const orig = ((): unknown => {
       core.uninstall();
