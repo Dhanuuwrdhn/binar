@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { formatDuration, formatSize, prettyBody } from '../utils/format';
 import { callToText } from '../utils/export';
+import { callToCurl } from '../utils/curl';
 import { copyOrShare, shareText } from './deliver';
 import { useDeliveryFeedback } from './hooks';
 import { statusColor } from './CallListScreen';
@@ -37,6 +38,9 @@ export function CallDetailScreen({ call, onBack }: Props) {
           {call.method} {call.url}
         </Text>
         <View style={styles.headerActions}>
+          <Pressable onPress={() => deliver(() => copyOrShare(callToCurl(call), label))} hitSlop={8}>
+            <Text style={styles.headerAction}>cURL</Text>
+          </Pressable>
           <Pressable onPress={() => deliver(() => copyOrShare(callToText(call), label))} hitSlop={8}>
             <Text style={styles.headerAction}>Copy</Text>
           </Pressable>

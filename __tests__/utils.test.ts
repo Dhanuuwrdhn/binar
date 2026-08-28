@@ -1,5 +1,5 @@
 import { redactHeaders, redactBodyFields } from '../src/utils/redact';
-import { toStoredBody, parseRawHeaders, prettyBody } from '../src/utils/format';
+import { toStoredBody, parseRawHeaders, prettyBody, isPlaceholderBody } from '../src/utils/format';
 import { DEFAULT_REDACTED_HEADERS, DEFAULT_REDACTED_BODY_FIELDS, resolveConfig } from '../src/types';
 
 describe('redactHeaders', () => {
@@ -93,6 +93,22 @@ describe('toStoredBody', () => {
       bodyTruncated: true,
       size: 2_411_724,
     });
+  });
+});
+
+describe('isPlaceholderBody', () => {
+  it('recognizes Binar\'s own body-not-captured markers', () => {
+    expect(isPlaceholderBody('[FormData]')).toBe(true);
+    expect(isPlaceholderBody('[Blob 2048 bytes]')).toBe(true);
+    expect(isPlaceholderBody('[ArrayBuffer 8 bytes]')).toBe(true);
+    expect(isPlaceholderBody('[response body too large to capture: 4.8 MB]')).toBe(true);
+    expect(isPlaceholderBody('[image/png response, 2.0 KB]')).toBe(true);
+  });
+
+  it('does not flag real bodies, including ones that start with a bracket', () => {
+    expect(isPlaceholderBody('{"ok":true}')).toBe(false);
+    expect(isPlaceholderBody('[1,2,3]')).toBe(false);
+    expect(isPlaceholderBody(undefined)).toBe(false);
   });
 });
 

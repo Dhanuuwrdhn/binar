@@ -54,6 +54,25 @@ export function toStoredBody(raw: unknown, maxBodySize: number): StoredBody {
   return { body: text, bodyTruncated: false, size };
 }
 
+const PLACEHOLDER_BODY_PATTERNS = [
+  /^\[FormData\]$/,
+  /^\[Blob \d+ bytes\]$/,
+  /^\[ArrayBuffer \d+ bytes\]$/,
+  /^\[response body too large to capture: .+\]$/,
+  /^\[.+ response(, .+)?\]$/,
+];
+
+/**
+ * True for one of Binar's own "body not captured verbatim" placeholders
+ * (FormData/Blob/ArrayBuffer summaries above, or a SkippedBody marker) —
+ * consumers that reconstruct the real request (e.g. the cURL exporter)
+ * need to know not to treat this text as the actual body.
+ */
+export function isPlaceholderBody(body: string | undefined): boolean {
+  if (!body) return false;
+  return PLACEHOLDER_BODY_PATTERNS.some((p) => p.test(body));
+}
+
 export function prettyBody(body?: string): string {
   if (!body) return '';
   try {
