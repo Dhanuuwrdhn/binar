@@ -17,3 +17,29 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run typecheck
+
+  publish:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm ci
+      - name: Publish if package.json version is ahead of npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          PKG_NAME=$(node -p "require('./package.json').name")
+          LOCAL_VERSION=$(node -p "require('./package.json').version")
+          PUBLISHED_VERSION=$(npm view "$PKG_NAME" version 2>/dev/null || echo "0.0.0")
+          if [ "$LOCAL_VERSION" != "$PUBLISHED_VERSION" ]; then
+            echo "Publishing $PKG_NAME@$LOCAL_VERSION (npm currently has $PUBLISHED_VERSION)"
+            npm publish --access public
+          else
+            echo "npm already has $PKG_NAME@$LOCAL_VERSION, skipping publish."
+          fi
