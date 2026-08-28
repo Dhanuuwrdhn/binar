@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version 0.1.0" src="https://img.shields.io/badge/version-0.1.0-FFB627?style=flat-square&labelColor=0E1420">
+  <img alt="npm version" src="https://img.shields.io/npm/v/@dhanuwrdhn/binar?style=flat-square&color=FFB627&labelColor=0E1420">
   <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-E8EDF7?style=flat-square&labelColor=0E1420">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-6BA5FF?style=flat-square&labelColor=0E1420">
   <img alt="React Native" src="https://img.shields.io/badge/React_Native-Expo_%7C_bare-6BA5FF?style=flat-square&labelColor=0E1420">
@@ -24,10 +24,10 @@ Axios needs zero configuration. So does everything else.
 ## Install
 
 ```bash
-npm install github:Born2Works/bornworks-react-native-network
+npm install @dhanuwrdhn/binar
 ```
 
-Metro transpiles the TypeScript source directly — there is no build step. The package installs under its own name, so import from `@dhanuwrdhn/binar`.
+Metro transpiles the TypeScript source directly — there is no build step.
 
 > Running Jest in the host app? Add the package to `transformIgnorePatterns`, or Jest will fail to parse the shipped TypeScript.
 
@@ -133,4 +133,4 @@ npm run typecheck
 
 ## License
 
-MIT © [Bornworks](https://github.com/Born2Works)
+MIT © [Dhanu Wardhana](https://github.com/Dhanuuwrdhn)
